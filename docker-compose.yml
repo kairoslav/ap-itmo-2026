@@ -1,0 +1,41 @@
+services:
+  user-service:
+    build: ./user-service
+    ports:
+      - "${USER_SERVICE_HOST_PORT:-15000}:5000"
+    environment:
+      - PORT=5000
+      - DB_PATH=/data/user-service.db
+    volumes:
+      - user-service-data:/data
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "${NOTIFICATION_SERVICE_HOST_PORT:-15001}:5001"
+    environment:
+      - PORT=5001
+      - DB_PATH=/data/notification-service.db
+    volumes:
+      - notification-service-data:/data
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "${ORDER_SERVICE_HOST_PORT:-15002}:5002"
+    environment:
+      - PORT=5002
+      - DB_PATH=/data/order-service.db
+      - USER_SERVICE_URL=http://user-service:5000
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5001
+      - HTTP_TIMEOUT_SECONDS=2
+    volumes:
+      - order-service-data:/data
+    depends_on:
+      - user-service
+      - notification-service
+
+volumes:
+  user-service-data:
+  notification-service-data:
+  order-service-data:
